@@ -16,6 +16,8 @@ public class PlayerController : NetworkBehaviour
 
     public GameObject PlayerCameraObj;
 
+    public Animator animator;
+
 
     // Start is called before the first frame update
     void Start()
@@ -29,7 +31,7 @@ public class PlayerController : NetworkBehaviour
         else
         {
             //Disable Canvas/Camera so we dont have more than one Canvas/Camera in the scene
-            PlayerCameraObj.SetActive(true);
+            PlayerCameraObj.SetActive(false);
         }
 
     }
@@ -40,10 +42,10 @@ public class PlayerController : NetworkBehaviour
         //Checking if this is the LocalPlayer if so the player can move his character and do stuff
         if (this.isLocalPlayer)
         {
-            Debug.Log("is lcoalPlayer");
             PlayerMovement();
             PlayerCombat();
             PlayerCamera.CameraMovement();
+            //Debug.Log(Rb.velocity.y);
         }
         else
         {
@@ -60,6 +62,18 @@ public class PlayerController : NetworkBehaviour
         Vector3 movePos = transform.right * x + transform.forward * z;
         Vector3 move = new Vector3(movePos.x, Rb.velocity.y, movePos.z);
 
+        if(x !=0 || z != 0)
+        {
+            animator.SetBool("Walking", true);
+        }
+        else
+        {
+            animator.SetBool("Walking", false);
+        }
+
+        //Debug.Log("float x" + x);
+        //Debug.Log("float z" + z);
+
         Rb.velocity = move;
 
         //Grounding
@@ -68,6 +82,10 @@ public class PlayerController : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && Grounded == true)
         {
             Rb.AddForce(new Vector3(transform.position.x, JumpForce, transform.position.z), ForceMode.Impulse);
+            if(Rb.velocity.y >= JumpForce)
+            {
+                Rb.velocity = new Vector3(transform.position.x, JumpForce, transform.position.z);
+            }
         }
     }
 
@@ -78,6 +96,7 @@ public class PlayerController : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             Debug.Log("primaryAttack");
+            animator.SetBool("Attacking", true);
         }
         //RightClick
         if (Input.GetKeyDown(KeyCode.Mouse1))
