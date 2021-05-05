@@ -42,6 +42,7 @@ public class PlayerController : NetworkBehaviour
         {
             Debug.Log("is lcoalPlayer");
             PlayerMovement();
+            PlayerCombat();
             PlayerCamera.CameraMovement();
         }
         else
@@ -55,17 +56,48 @@ public class PlayerController : NetworkBehaviour
         //Input
         float x = Input.GetAxisRaw("Horizontal") * MoveSpeed;
         float z = Input.GetAxisRaw("Vertical") * MoveSpeed;
-
         //Movement
-        Vector3 PlayerMovement = new Vector3(x, 0f, z) * MoveSpeed * Time.deltaTime;
-        transform.Translate(PlayerMovement, Space.Self);
+        Vector3 movePos = transform.right * x + transform.forward * z;
+        Vector3 move = new Vector3(movePos.x, Rb.velocity.y, movePos.z);
+
+        Rb.velocity = move;
 
         //Grounding
-        Grounded = Physics.CheckSphere(new Vector3(transform.position.x, transform.position.y - 1, transform.position.z), 0.4f, layerMask);
+        Grounded = Physics.CheckSphere(new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z), 0.4f, layerMask);
         //Jumping
-        if(Input.GetKeyDown(KeyCode.Space) && Grounded == false)
+        if (Input.GetKeyDown(KeyCode.Space) && Grounded == true)
         {
             Rb.AddForce(new Vector3(transform.position.x, JumpForce, transform.position.z), ForceMode.Impulse);
+        }
+    }
+
+    void PlayerCombat()
+    {
+        //Inputs
+        //LeftClick
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            Debug.Log("primaryAttack");
+        }
+        //RightClick
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            Debug.Log("SecondaryAttack");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            Debug.Log("Spell1");
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            Debug.Log("Spell2");
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Debug.Log("Spell3");
         }
     }
 
