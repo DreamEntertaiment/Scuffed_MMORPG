@@ -11,6 +11,7 @@ public class PlayerController : NetworkBehaviour
     public float MoveSpeed = 5;
     public bool Grounded = true;
     public float JumpForce = 5;
+    private bool moveAble = true;
 
     public PlayerCameraScript PlayerCamera;
 
@@ -55,38 +56,52 @@ public class PlayerController : NetworkBehaviour
 
     void PlayerMovement()
     {
-        //Input
-        float x = Input.GetAxisRaw("Horizontal") * MoveSpeed;
-        float z = Input.GetAxisRaw("Vertical") * MoveSpeed;
-        //Movement
-        Vector3 movePos = transform.right * x + transform.forward * z;
-        Vector3 move = new Vector3(movePos.x, Rb.velocity.y, movePos.z);
-
-        if(x !=0 || z != 0)
+        if (moveAble == true)
         {
-            animator.SetBool("Walking", true);
-        }
-        else
-        {
-            animator.SetBool("Walking", false);
-        }
+            //Input
+            float x = Input.GetAxisRaw("Horizontal") * MoveSpeed;
+            float z = Input.GetAxisRaw("Vertical") * MoveSpeed;
+            //Movement
+            Vector3 movePos = transform.right * x + transform.forward * z;
+            Vector3 move = new Vector3(movePos.x, Rb.velocity.y, movePos.z);
 
-        //Debug.Log("float x" + x);
-        //Debug.Log("float z" + z);
-
-        Rb.velocity = move;
-
-        //Grounding
-        Grounded = Physics.CheckSphere(new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z), 0.4f, layerMask);
-        //Jumping
-        if (Input.GetKeyDown(KeyCode.Space) && Grounded == true)
-        {
-            Rb.AddForce(new Vector3(transform.position.x, JumpForce, transform.position.z), ForceMode.Impulse);
-            if(Rb.velocity.y >= JumpForce)
+            if (x != 0 || z != 0 && moveAble == true)
             {
-                Rb.velocity = new Vector3(transform.position.x, JumpForce, transform.position.z);
+                animator.SetBool("Walking", true);
+            }
+            else
+            {
+                animator.SetBool("Walking", false);
+            }
+
+            //Debug.Log("float x" + x);
+            //Debug.Log("float z" + z);
+
+            Rb.velocity = move;
+
+            //Grounding
+            Grounded = Physics.CheckSphere(new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z), 0.4f, layerMask);
+            //Jumping
+            if (Input.GetKeyDown(KeyCode.Space) && Grounded == true)
+            {
+                Rb.AddForce(new Vector3(transform.position.x, JumpForce, transform.position.z), ForceMode.Impulse);
+                if (Rb.velocity.y >= JumpForce)
+                {
+                    Rb.velocity = new Vector3(transform.position.x, JumpForce, transform.position.z);
+                }
             }
         }
+
+    }
+
+    IEnumerator AfterAttackAnimation(float time)
+    {
+        animator.SetBool("Attacking", true);
+        moveAble = false;
+        yield return new WaitForSeconds(time);
+
+        animator.SetBool("Attacking", false);
+        moveAble = true;
     }
 
     void PlayerCombat()
@@ -96,7 +111,7 @@ public class PlayerController : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             Debug.Log("primaryAttack");
-            animator.SetBool("Attacking", true);
+            StartCoroutine(AfterAttackAnimation(1.1f));
         }
         //RightClick
         if (Input.GetKeyDown(KeyCode.Mouse1))
